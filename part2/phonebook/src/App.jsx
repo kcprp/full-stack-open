@@ -2,48 +2,81 @@ import { useEffect, useState } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
-import axios from 'axios'
+import noteService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
-
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
 
+  // Get persons data
   useEffect(() => {
-    console.log('effect');
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        const persons = response.data
-        setPersons(persons)
+    noteService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }, [])
 
   const addName = (event) => {
     event.preventDefault()
-
-    const nameExists = persons.some(person => person.name.toLowerCase() === newName.toLowerCase())
+    const trimmedName = newName.trim()
+    const nameExists = persons.some(person => person.name.toLowerCase() === trimmedName.toLowerCase())
     const numberExists = persons.some(person => person.number === newNumber)
-
-    if (newName === '' || newNumber === '') return
-    if (nameExists || numberExists) {
+  
+    if (!trimmedName || !newNumber) return
+  
+    if (nameExists && !numberExists) {
+      updateNumber()
       resetInputs()
-      const alertMessage = nameExists
-      ? `${newName} is already added to phonebook`
-      : `${newNumber} is already added to phonebook`
-      alert(alertMessage)
+      return
+    } else if (nameExists && numberExists) {
+      resetInputs()
+      alert('Name and number already added to phonebook')
       return
     }
-    
+  
     const nameObject = {
-      name: newName,
+      name: trimmedName,
       number: newNumber,
-      id: persons.length + 1
+      id: persons.length + 1 
     }
-    setPersons(persons.concat(nameObject))
-    resetInputs()
+
+    noteService
+      .create(nameObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        resetInputs()
+      })
+  }
+
+  const deleteName = id => {
+    const toDelete = persons.find(person => person.id === id) 
+    if (toDelete && window.confirm(`Delete ${toDelete.name}?`)) {
+      noteService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+        })
+    }
+  }
+
+  const updateNumber = () => {
+    const confirmMessage = `${newName} is already added to phonebook, replace the old number with a new one?`
+    if (window.confirm(confirmMessage)) {
+      const currentId = persons.find(person => person.name.toLowerCase() === newName.toLowerCase().trim()).id
+      const nameObject = {
+        name: newName,
+        number: newNumber,
+        id: currentId
+      }
+      noteService
+        .update(currentId, nameObject)
+        .then(returnedPerson => {
+          setPersons(persons.map(person => person.id !== currentId ? person : returnedPerson))
+        })
+    }
   }
 
   const resetInputs = () => {
@@ -82,7 +115,7 @@ const App = () => {
 
       <h3>Numbers</h3>
 
-      <Persons persons={personsToShow}/>
+      <Persons persons={personsToShow} deleteName={deleteName}/>
     </div>
   )
 }
