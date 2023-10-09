@@ -11,7 +11,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
   const [message, setMessage] = useState(null)
-  // const [messageColor, setMessageColor] = useState('green')
+  const [messageColor, setMessageColor] = useState('green')
 
   // Get persons data
   useEffect(() => {
@@ -58,8 +58,7 @@ const App = () => {
     setMessage(
       `Added ${trimmedName}`
     )
-    // setMessageColor('green')
-    setTimeout(() => {
+      setTimeout(() => {
       setMessage(null)
     }, 5000)
   }
@@ -93,9 +92,10 @@ const App = () => {
           setMessage(
             `Information of ${newName.trim()} was already removed from the server`
           )
-        // setMessageColor('red')
+        setMessageColor('red')
         setTimeout(() => {
           setMessage(null)
+          setMessageColor('green')
         }, 5000)
         })
     }
@@ -123,7 +123,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={message}/>
+      <Notification message={message} color={messageColor}/>
 
       <Filter filter={newFilter} handleFilter={handleFilterChange} />
 
