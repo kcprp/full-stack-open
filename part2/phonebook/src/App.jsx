@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 import noteService from './services/persons'
 
 const App = () => {
@@ -9,6 +10,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  // const [messageColor, setMessageColor] = useState('green')
 
   // Get persons data
   useEffect(() => {
@@ -49,6 +52,16 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         resetInputs()
       })
+      .catch(error => {
+        console.log("Error in creating person", error);
+      })
+    setMessage(
+      `Added ${trimmedName}`
+    )
+    // setMessageColor('green')
+    setTimeout(() => {
+      setMessage(null)
+    }, 5000)
   }
 
   const deleteName = id => {
@@ -76,6 +89,15 @@ const App = () => {
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== currentId ? person : returnedPerson))
         })
+        .catch(error => {
+          setMessage(
+            `Information of ${newName.trim()} was already removed from the server`
+          )
+        // setMessageColor('red')
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)
+        })
     }
   }
 
@@ -100,6 +122,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={message}/>
 
       <Filter filter={newFilter} handleFilter={handleFilterChange} />
 
