@@ -14,7 +14,7 @@ const Countries = ({ countries, filter }) => {
         )
     } else if (countries.length > 1 && !selectedCountry) {
         return countries.map((country) => (
-            <div>
+            <div key={country.cca3}>
                  {country.name.common}
                 <button onClick={() => setSelectedCountry(country)}>
                     show

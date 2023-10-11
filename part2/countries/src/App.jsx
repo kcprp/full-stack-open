@@ -7,7 +7,6 @@ function App() {
   const [filter, setFilter] = useState('')
   
   useEffect(() => {
-    // load all countries names
     axios
       .get('https://studies.cs.helsinki.fi/restcountries/api/all')
       .then(response => {
