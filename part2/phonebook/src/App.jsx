@@ -6,7 +6,7 @@ import Notification from './components/Notification'
 import noteService from './services/persons'
 
 const App = () => {
-  const [persons, setPersons] = useState([])
+  const [persons, setPersons] = useState(null)
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
@@ -21,6 +21,11 @@ const App = () => {
         setPersons(initialPersons)
       })
   }, [])
+
+  // do not render anything if notes is still null
+  if (!persons) {
+    return null
+  }
 
   const addName = (event) => {
     event.preventDefault()
