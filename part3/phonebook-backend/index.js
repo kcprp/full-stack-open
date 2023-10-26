@@ -1,20 +1,13 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-const morgan = require('morgan')
+const Person = require('./models/person')
 const cors = require('cors')
 
 app.use(express.static('dist'))
 app.use(express.json())
-app.use(morgan('dev'))
 app.use(cors())
 
-// Define a custom token 'content-length'
-morgan.token('content-length', (reqquest, response) => {
-    return response.get('Content-Length');
-});
-
-// Use the custom token in the logging format
-app.use(morgan(':method :url :status :content-length'));
 
 let persons = [
     { 
@@ -44,20 +37,15 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).json({
-            error: 'person not found'
-        })
-    }
+  Person.findById(request.params.id).then(person => {
+    response.json(person)
+  })
 })
 
 app.get('/info', (request, response) => {
@@ -117,7 +105,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
