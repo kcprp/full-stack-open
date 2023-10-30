@@ -63,8 +63,6 @@ app.get('/info', (request, response) => {
     )
 })
 
-
-
 const generateId = () => Math.floor(1000 * Math.random())
 
 app.post('/api/persons', (request, response) => {
@@ -84,43 +82,29 @@ app.post('/api/persons', (request, response) => {
     person.save().then(savedPerson => {
         response.json(savedPerson)
     })
-
-    // if (!body.name) {
-    //     return response.status(400).json({
-    //         error: 'name missing'
-    //     })
-    // }
-    // if (!body.number) {
-    //     return response.status(400).json({
-    //         error: 'number missing'
-    //     })
-    // }
-
-    // if (persons.find(person => person.name.toLowerCase() === body.name.toLowerCase())) {
-    //     return response.status(400).json({
-    //         error: 'name must be unique'
-    //     })
-    // }
-
-    // const person = {
-    //     id: generateId(),
-    //     name: body.name,
-    //     number: body.number
-    // }
-
-    // persons = persons.concat(person)
-    // console.log(body);
-    // response.json(person)
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
       .then(result => {
-        const id = Number(request.params.id)
-        const startCount = persons.length
-        persons = persons.filter(person => person.id !== id)
+
         response.status(204).end()
     })
+      .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+
+    const person = {
+      name: body.name,
+      number: body.number
+    }
+
+    Person.findByIdAndUpdate(request.params.id, person, { new: true})
+      .then(updatedPerson => {
+        response.json(updatedPerson)
+      })
       .catch(error => next(error))
 })
 
