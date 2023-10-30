@@ -59,17 +59,14 @@ app.get('/info', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const startCount = persons.length
-    persons = persons.filter(person => person.id !== id)
-
-    if (startCount != persons.length) {
+    Person.findByIdAndRemove(request.params.id)
+      .then(result => {
+        const id = Number(request.params.id)
+        const startCount = persons.length
+        persons = persons.filter(person => person.id !== id)
         response.status(204).end()
-    } else {
-        response.status(404).json({
-            error: 'index not found'
-        })
-    }
+    })
+      .catch(error => next(error))
 })
 
 const generateId = () => Math.floor(1000 * Math.random())
