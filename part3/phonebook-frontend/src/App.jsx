@@ -3,7 +3,7 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import Notification from './components/Notification'
-import noteService from './services/persons'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState(null)
@@ -15,7 +15,7 @@ const App = () => {
 
   // Get persons data
   useEffect(() => {
-    noteService
+    personService
       .getAll()
       .then(initialPersons => {
         setPersons(initialPersons)
@@ -51,27 +51,28 @@ const App = () => {
       id: persons.length + 1 
     }
 
-    noteService
+    personService
       .create(nameObject)
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
         resetInputs()
+        setMessage(
+          `Added ${trimmedName}`
+        )
+          setTimeout(() => {
+          setMessage(null)
+        }, 5000)
       })
       .catch(error => {
-        console.log("Error in creating person", error);
+        const errorMessage = error.response.data.error
+        displayErrorMessage(errorMessage)
       })
-    setMessage(
-      `Added ${trimmedName}`
-    )
-      setTimeout(() => {
-      setMessage(null)
-    }, 5000)
   }
 
   const deleteName = id => {
     const toDelete = persons.find(person => person.id === id) 
     if (toDelete && window.confirm(`Delete ${toDelete.name}?`)) {
-      noteService
+      personService
         .remove(id)
         .then(() => {
           setPersons(persons.filter(person => person.id !== id))
@@ -88,22 +89,25 @@ const App = () => {
         number: newNumber,
         id: currentId
       }
-      noteService
+      personService
         .update(currentId, nameObject)
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== currentId ? person : returnedPerson))
         })
         .catch(error => {
-          setMessage(
-            `Information of ${newName.trim()} was already removed from the server`
-          )
-        setMessageColor('red')
-        setTimeout(() => {
-          setMessage(null)
-          setMessageColor('green')
-        }, 5000)
+          const errorMessage = `Information of ${newName.trim()} was already removed from the server`
+          displayErrorMessage(errorMessage)
         })
     }
+  }
+
+  const displayErrorMessage = (message) => {
+    setMessage(message)
+    setMessageColor('red')
+    setTimeout(() => {
+      setMessage(null)
+      setMessageColor('green')
+    }, 5000)
   }
 
   const resetInputs = () => {
