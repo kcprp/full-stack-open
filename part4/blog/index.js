@@ -4,14 +4,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 require('dotenv').config()
 
-const BlogSchema = new mongoose.Schema({
-  title: String,
-  author: String,
-  url: String,
-  likes: Number
-})
-
-const Blog = mongoose.model('Blog', BlogSchema)
+Blog = require('./models/blog')
 
 const MONGODB_URI = process.env.MONGODB_URI
 mongoose.connect(MONGODB_URI)
