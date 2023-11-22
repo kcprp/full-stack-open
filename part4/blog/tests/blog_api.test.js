@@ -122,6 +122,25 @@ test('missing likes property defaults to 0', async () => {
   .expect(400)
  })
 
+ test('deletion of a blog results in status code 204', async () => {
+  const blogsAtStart = helper.blogsInDb()
+  const blogToDelete = blogsAtStart[0]
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .expect(204)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  expect(blogsAtEnd).toHaveLength(
+    helper.initialBlogs.length - 1
+  )
+
+  const titles = blogsAtEnd.map(b => b.title)
+
+  expect(titles).not.toContain(blogToDelete.title)
+ })
+
 afterAll(async () => {
   await mongoose.connection.close()
 })
