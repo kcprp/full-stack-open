@@ -71,6 +71,31 @@ test('unique identifier property of the blog is named id', async () => {
   expect(blogToTest.id).toBeDefined()
 })
 
+test('missing likes property defaults to 0', async () => {
+  const newBlog =   {
+    _id: "5a422bc61b54a676234d17fc",
+    title: "Type wars",
+    author: "Robert C. Martin",
+    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+    __v: 0
+  }
+  
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  
+  const addedBlog = blogsAtEnd
+    .filter(blog => blog.title === 'Type wars')
+
+  expect(addedBlog.likes === 0)
+
+ })
+
+
 afterAll(async () => {
   await mongoose.connection.close()
 })
