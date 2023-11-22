@@ -123,7 +123,7 @@ test('missing likes property defaults to 0', async () => {
  })
 
  test('deletion of a blog results in status code 204', async () => {
-  const blogsAtStart = helper.blogsInDb()
+  const blogsAtStart = await helper.blogsInDb()
   const blogToDelete = blogsAtStart[0]
 
   await api
@@ -136,9 +136,32 @@ test('missing likes property defaults to 0', async () => {
     helper.initialBlogs.length - 1
   )
 
-  const titles = blogsAtEnd.map(b => b.title)
+  const titles = await blogsAtEnd.map(b => b.title)
 
   expect(titles).not.toContain(blogToDelete.title)
+ })
+
+ test('updating of a blog works correctly', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToUpdate = blogsAtStart[0]
+
+  const newBlog =   {
+    title: "Type wars",
+    author: "Robert C. Martin",
+    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+    likes: 2,
+  }
+  
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(newBlog)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  const titles = blogsAtEnd.map(b => b.title)
+
+  expect(titles).not.toContain(blogToUpdate.title)
+  expect(titles).toContain(newBlog.title)
  })
 
 afterAll(async () => {
