@@ -5,15 +5,22 @@ const helper = require('./test_helper')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 beforeEach(async () => {
   await Blog.deleteMany()
+  await User.deleteMany()
 
   const blogObjects = helper.initialBlogs
     .map(blog => new Blog(blog))
 
-  const promiseArray = blogObjects.map(blog => blog.save())
-  await Promise.all(promiseArray)
+  const userObjects = helper.iniitalUsers
+    .map(user => new User(user))
+
+  const blogPromiseArray = blogObjects.map(blog => blog.save())
+  const userPromiseArray = userObjects.map(user => user.save())
+  await Promise.all(blogPromiseArray)
+  await Promise.all(userPromiseArray)
 })
 
 test('blogs are returned as json', async () => {
@@ -162,6 +169,69 @@ test('missing likes property defaults to 0', async () => {
 
   expect(titles).not.toContain(blogToUpdate.title)
   expect(titles).toContain(newBlog.title)
+ })
+
+ describe('addition of a new user', () => {
+
+  test('valid user can be added', async () => {
+    const newUser = {
+      username: "Potoks",
+      name: "Kacper",
+      password: "2137"
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+  
+    const usersAtEnd = await helper.usersInDb()
+
+    expect(usersAtEnd.length).toEqual(helper.iniitalUsers.length + 1)
+    
+    const usernames = usersAtEnd.map(u => u.username)
+    expect(usernames).toContain(
+      'Potoks'
+    )
+  })
+
+  test('invalid user cannot be added', async () => {
+    const invalidUsername = {
+      username: "no",
+      name: "e12f",
+      password: "1234"
+    }
+
+    await api
+      .post('/api/users')
+      .send(invalidUsername)
+      .expect(400)
+
+    const missingPassword = {
+      username: "yes",
+    }
+    await api
+      .post('/api/users')
+      .send(missingPassword)
+      .expect(400)
+      .expect(res => {
+        expect(res.body.error).toBe('Password is required')
+      })
+  
+    const passwordTooShort = {
+      username: "lol",
+      password: "xd"
+    }    
+
+    await api
+      .post('/api/users')
+      .send(passwordTooShort)
+      .expect(400)
+      .expect(res => {
+        expect(res.body.error).toBe('Password must be at least 3 characters long')
+      })
+  })
  })
 
 afterAll(async () => {
