@@ -2,11 +2,10 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
-require('dotenv').config()
-
+const config = require('./utils/config')
 const Blog = require('./models/blog')
 
-const mongoUrl = process.env.MONGODB_URI
+const mongoUrl = config.MONGODB_URI
 console.log(mongoUrl)
 mongoose.connect(mongoUrl)
 
@@ -31,7 +30,7 @@ app.post('/api/blogs', (request, response) => {
     })
 })
 
-const PORT = process.env.PORT
+const PORT = config.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
