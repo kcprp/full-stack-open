@@ -118,3 +118,33 @@ describe('favorite blog', () => {
     )
   })
 })
+
+describe('most blogs', () => {
+  test('returns null with no blogs', () => {
+    assert.deepStrictEqual(listHelper.mostBlogs([]), null)
+  })
+
+  test('returns most popular author with multiple blogs', () => {
+    const result = listHelper.mostBlogs(multipleBlogs)
+
+    assert.deepStrictEqual(
+      result,
+      {
+        author: "Robert C. Martin",
+        blogs: 3
+      }
+    )
+  })
+
+  test('returns most popular with one blog', () => {
+    const result = listHelper.mostBlogs(listWithOneBlog)
+
+    assert.deepStrictEqual(
+      result,
+      {
+        author: 'Edsger W. Dijkstra',
+        blogs: 1
+      } 
+    )
+  })
+})
