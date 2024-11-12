@@ -76,6 +76,38 @@ test('if "likes" property missing, it will default to 0', async () => {
   assert.strictEqual(addedNewBlog.likes, 0)
 })
 
+test.only('responds with 400 if title is missing', async () => {
+  const missingTitle = {
+    author: 'Gwern',
+    url: 'https://gwern.net/scaling-hypothesis',
+    likes: 2137 
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(missingTitle)
+    .expect(400)
+    
+  const blogsAtEnd = await helper.blogsInDB()
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+})
+
+test.only('respons with 400 if url is missing', async () => {
+  const missingUrl = {
+    title: 'The Scaling Hypothesis',
+    author: 'Gwern',
+    likes: 2137 
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(missingUrl)
+    .expect(400)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+})
+
 after(async () => {
   mongoose.connection.close()
 })
