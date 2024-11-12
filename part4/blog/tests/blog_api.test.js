@@ -28,6 +28,15 @@ test.only('correct number of blogs returned', async () => {
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
+test.only('verify the unique identifier property is named "id"', async () => {
+  const response = await api.get('/api/blogs')
+  // Check that id exists and _id does not exist for each blog
+  response.body.forEach(blog => {
+    assert.strictEqual(typeof blog.id, 'string')
+    assert.strictEqual(blog._id, undefined)
+  })
+})
+
 after(async () => {
   mongoose.connection.close()
 })
