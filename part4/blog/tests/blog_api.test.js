@@ -22,13 +22,13 @@ test('blogs are returned as json', async () => {
     .expect('Content-Type', /application\/json/)
 })
 
-test.only('correct number of blogs returned', async () => {
+test('correct number of blogs returned', async () => {
   const response = await api.get('/api/blogs')
 
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
-test.only('verify the unique identifier property is named "id"', async () => {
+test('verify the unique identifier property is named "id"', async () => {
   const response = await api.get('/api/blogs')
   // Check that id exists and _id does not exist for each blog
   response.body.forEach(blog => {
@@ -37,7 +37,7 @@ test.only('verify the unique identifier property is named "id"', async () => {
   })
 })
 
-test.only('a blog can be added', async () => {
+test('a blog can be added', async () => {
   const newBlog = {
     title: 'The Scaling Hypothesis',
     author: 'Gwern',
@@ -56,6 +56,24 @@ test.only('a blog can be added', async () => {
 
   const blogTitles = blogsAtEnd.map(blog => blog.title)
   assert(blogTitles.includes('The Scaling Hypothesis'))
+})
+
+test('if "likes" property missing, it will default to 0', async () => {
+  const newBlog = {
+    title: 'The Scaling Hypothesis',
+    author: 'Gwern',
+    url: 'https://gwern.net/scaling-hypothesis',
+  }
+  
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const addedNewBlog = blogsAtEnd.find(blog => blog.title === newBlog.title)
+  assert.strictEqual(addedNewBlog.likes, 0)
 })
 
 after(async () => {
