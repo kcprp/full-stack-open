@@ -37,6 +37,27 @@ test.only('verify the unique identifier property is named "id"', async () => {
   })
 })
 
+test.only('a blog can be added', async () => {
+  const newBlog = {
+    title: 'The Scaling Hypothesis',
+    author: 'Gwern',
+    url: 'https://gwern.net/scaling-hypothesis',
+    likes: 2137
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+  const blogTitles = blogsAtEnd.map(blog => blog.title)
+  assert(blogTitles.includes('The Scaling Hypothesis'))
+})
+
 after(async () => {
   mongoose.connection.close()
 })
