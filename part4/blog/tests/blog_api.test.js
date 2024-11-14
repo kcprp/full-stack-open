@@ -76,7 +76,7 @@ test('if "likes" property missing, it will default to 0', async () => {
   assert.strictEqual(addedNewBlog.likes, 0)
 })
 
-test.only('responds with 400 if title is missing', async () => {
+test('responds with 400 if title is missing', async () => {
   const missingTitle = {
     author: 'Gwern',
     url: 'https://gwern.net/scaling-hypothesis',
@@ -92,7 +92,7 @@ test.only('responds with 400 if title is missing', async () => {
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 })
 
-test.only('respons with 400 if url is missing', async () => {
+test('responds with 400 if url is missing', async () => {
   const missingUrl = {
     title: 'The Scaling Hypothesis',
     author: 'Gwern',
@@ -106,6 +106,29 @@ test.only('respons with 400 if url is missing', async () => {
 
   const blogsAtEnd = await helper.blogsInDB()
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+})
+
+test.only('blogs can be deleted', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const deleteBlog = blogsAtStart[0]
+  console.log(deleteBlog)
+  await api
+    .delete(`/api/blogs/${deleteBlog.id}`)
+    .expect(204)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const blogTitles = blogsAtEnd.map(blog => blog.title)
+  assert(!blogTitles.includes(deleteBlog.title))
+
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+})
+
+test.only('responds 400 when incorrect id delete requests', async () => {
+  const wrongId = 0
+  
+  await api
+    .delete(`/api/blogs/${wrongId}`)
+    .expect(400)
 })
 
 after(async () => {
