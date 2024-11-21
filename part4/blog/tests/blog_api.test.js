@@ -209,6 +209,52 @@ describe('when there is initially one user in db', () => {
     const usernames = usersAtEnd.map(u => u.username)
     assert(usernames.includes(newUser.username))
   })
+
+  test('returns 400 with a non-unique username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const repeatedUser = {
+      username: 'root',
+      password: 'lol'
+    }
+
+    await api
+      .post('/api/users')
+      .send(repeatedUser)
+      .expect(400)
+
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+
+  })
+
+  test('returns 400 with username/password length less than 3', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const shortUsername = {
+      username: 'JP',
+      password: '2137'
+    }
+
+    await api
+      .post('/api/users')
+      .send(shortUsername)
+      .expect(400)
+
+    const shortPassword = {
+      username: 'JP2',
+      password: '21'
+    }
+
+    await api
+      .post('/api/users')
+      .send(shortPassword)
+      .expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
 })
 
 after(async () => {
