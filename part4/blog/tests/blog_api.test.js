@@ -41,11 +41,15 @@ describe('when there are blogs in db', () => {
   })
 
   test('a blog can be added', async () => {
+    const users = await helper.usersInDb()
+    const userId = users[0].id
+
     const newBlog = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
-      likes: 2137
+      likes: 2137,
+      userId: userId
     }
 
     await api
@@ -62,10 +66,14 @@ describe('when there are blogs in db', () => {
   })
 
   test('if "likes" property missing, it will default to 0', async () => {
+    const users = await helper.usersInDb()
+    const userId = users[0].id
+
     const newBlog = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
+      userId: userId
     }
     
     await api
@@ -80,10 +88,14 @@ describe('when there are blogs in db', () => {
   })
 
   test('responds with 400 if title is missing', async () => {
+    const users = await helper.usersInDb()
+    const userId = users[0].id
+
     const missingTitle = {
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
-      likes: 2137 
+      likes: 2137,
+      userId: userId
     }
 
     await api
@@ -96,10 +108,14 @@ describe('when there are blogs in db', () => {
   })
 
   test('responds with 400 if url is missing', async () => {
+    const users = await helper.usersInDb()
+    const userId = users[0].id
+
     const missingUrl = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
-      likes: 2137 
+      likes: 2137,
+      userId: userId  
     }
 
     await api
@@ -156,6 +172,9 @@ describe('when there are blogs in db', () => {
   })
 
   test('responds 400 when updating wrong id', async () => {
+    const users = await helper.usersInDb()
+    const userId = users[0].id
+
     const wrongId = 0
 
     const startBlog = helper.initialBlogs[0]
@@ -164,7 +183,8 @@ describe('when there are blogs in db', () => {
       title: startBlog.title,
       author: startBlog.author,
       url: startBlog.url,
-      likes: startBlog.likes + 1 
+      likes: startBlog.likes + 1,
+      userId: userId
     }
 
     await api
@@ -255,6 +275,29 @@ describe('when there is initially one user in db', () => {
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
+
+  test('blogs gets assigned to a user', async () => {
+    const users = await helper.usersInDb()
+    const user = users[0]
+    const userId = user.id
+
+    const newBlog = {
+      title: 'The Scaling Hypothesis',
+      author: 'Gwern',
+      url: 'https://gwern.net/scaling-hypothesis',
+      userId: userId
+    } 
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+      
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd[0].blogs.length, 1)
+  })
+
 })
 
 after(async () => {

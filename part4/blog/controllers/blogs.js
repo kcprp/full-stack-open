@@ -1,23 +1,37 @@
-const notesRouter = require('express').Router()
+const blogRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
-notesRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
+blogRouter.get('/', async (request, response) => {
+  const blogs = await Blog
+    .find({}).populate('user')
   response.json(blogs)
 })
 
-notesRouter.post('/', async (request, response, next) => {
-  const blog = new Blog(request.body)
+blogRouter.post('/', async (request, response, next) => {
+  const body = request.body
+
+  const user = await User.findById(body.userId)
+
+  const blog = new Blog({
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes,
+    user: user.id
+  })
 
   try {
-    const result = await blog.save()
-    response.status(201).json(result)
+    const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+    response.status(201).json(savedBlog)
   } catch(error) {
     next(error)
   }
 })
 
-notesRouter.delete('/:id', async (request, response, next) => {
+blogRouter.delete('/:id', async (request, response, next) => {
   const id = request.params.id
 
   try {
@@ -28,7 +42,7 @@ notesRouter.delete('/:id', async (request, response, next) => {
   }
 })
 
-notesRouter.put('/:id', async (request, response, next) => {
+blogRouter.put('/:id', async (request, response, next) => {
   const body = request.body
 
   const blog = {
@@ -46,4 +60,4 @@ notesRouter.put('/:id', async (request, response, next) => {
   }
 })
 
-module.exports = notesRouter
+module.exports = blogRouter
