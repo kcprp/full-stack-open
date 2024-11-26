@@ -16,6 +16,13 @@ describe('when there are blogs in db', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
+
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', passwordHash })
+
+    await user.save()
   })
 
   test('blogs are returned as json', async () => {
@@ -41,19 +48,22 @@ describe('when there are blogs in db', () => {
   })
 
   test('a blog can be added', async () => {
-    const users = await helper.usersInDb()
-    const userId = users[0].id
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
 
     const newBlog = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
       likes: 2137,
-      userId: userId
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -66,18 +76,21 @@ describe('when there are blogs in db', () => {
   })
 
   test('if "likes" property missing, it will default to 0', async () => {
-    const users = await helper.usersInDb()
-    const userId = users[0].id
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
 
     const newBlog = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
-      userId: userId
     }
     
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -88,18 +101,21 @@ describe('when there are blogs in db', () => {
   })
 
   test('responds with 400 if title is missing', async () => {
-    const users = await helper.usersInDb()
-    const userId = users[0].id
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
 
     const missingTitle = {
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
       likes: 2137,
-      userId: userId
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
       .send(missingTitle)
       .expect(400)
       
@@ -108,18 +124,21 @@ describe('when there are blogs in db', () => {
   })
 
   test('responds with 400 if url is missing', async () => {
-    const users = await helper.usersInDb()
-    const userId = users[0].id
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
 
     const missingUrl = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       likes: 2137,
-      userId: userId  
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
       .send(missingUrl)
       .expect(400)
 
@@ -277,25 +296,27 @@ describe('when there is initially one user in db', () => {
   })
 
   test('blogs gets assigned to a user', async () => {
-    const users = await helper.usersInDb()
-    const user = users[0]
-    const userId = user.id
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
 
     const newBlog = {
       title: 'The Scaling Hypothesis',
       author: 'Gwern',
       url: 'https://gwern.net/scaling-hypothesis',
-      userId: userId
     } 
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
       
-    const usersAtEnd = await helper.usersInDb()
-    assert.strictEqual(usersAtEnd[0].blogs.length, 1)
+    const userAtEnd = await User.findOne({ username: 'root' })
+    assert.strictEqual(userAtEnd.blogs.length, 1)
   })
 
 })
