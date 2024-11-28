@@ -147,24 +147,99 @@ describe('when there are blogs in db', () => {
   })
 
   test('blogs can be deleted', async () => {
-    const blogsAtStart = await helper.blogsInDB()
-    const deleteBlog = blogsAtStart[0]
+    // Login first
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const userToken = loginResponse.body.token
+
+    // Create a new blog first
+    const newBlog = {
+      title: 'The Scaling Hypothesis',
+      author: 'Gwern',
+      url: 'https://gwern.net/scaling-hypothesis',
+      likes: 2137,
+    }
+
+    // Save the blog and get its ID
+    const postResponse = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send(newBlog)
+
+    const blogToDelete = postResponse.body
+
+    // Now try to delete it
     await api
-      .delete(`/api/blogs/${deleteBlog.id}`)
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${userToken}`)
       .expect(204)
 
+    // Verify it's deleted
     const blogsAtEnd = await helper.blogsInDB()
-    const blogTitles = blogsAtEnd.map(blog => blog.title)
-    assert(!blogTitles.includes(deleteBlog.title))
+    assert(!blogsAtEnd.map(blog => blog.id).includes(blogToDelete.id))
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+  })
 
-    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+  test('responds 403 when incorrect user tries to delete a blog', async () => {
+    // First user creates a blog
+    const firstUserLogin = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+    
+    const firstUserToken = firstUserLogin.body.token
+
+    // Create a blog as first user
+    const newBlog = {
+      title: 'The Scaling Hypothesis',
+      author: 'Gwern', 
+      url: 'https://gwern.net/scaling-hypothesis',
+      likes: 2137,
+    }
+
+    const postResponse = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${firstUserToken}`)
+      .send(newBlog)
+
+    const blogToDelete = postResponse.body
+
+    // Create second user
+    const passwordHash = await bcrypt.hash('password', 10)
+    const secondUser = new User({ username: 'wronguser', passwordHash })
+    await secondUser.save()
+
+    // Login as second user
+    const secondUserLogin = await api
+      .post('/api/login')
+      .send({ username: 'wronguser', password: 'password'})
+
+    const secondUserToken = secondUserLogin.body.token
+
+    // Try to delete first user's blog as second user
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${secondUserToken}`)
+      .expect(403)
+
+    // Verify blog still exists
+    const blogsAtEnd = await helper.blogsInDB()
+    assert(blogsAtEnd.map(blog => blog.id).includes(blogToDelete.id))
   })
 
   test('responds 400 when incorrect id delete requests', async () => {
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret'})
+
+    const userToken = loginResponse.body.token
+    
     const wrongId = 0
     
     await api
       .delete(`/api/blogs/${wrongId}`)
+      .set('Authorization', `Bearer ${userToken}`)
       .expect(400)
   })
 

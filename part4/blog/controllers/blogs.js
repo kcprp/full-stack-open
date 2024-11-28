@@ -16,6 +16,7 @@ blogRouter.post('/', async (request, response, next) => {
     return response.status(401).json({ error: 'token invalid' })
   }
   const user = await User.findById(decodedToken.id)
+  console.log(user)
 
   const blog = new Blog({
     title: body.title,
@@ -36,11 +37,28 @@ blogRouter.post('/', async (request, response, next) => {
 })
 
 blogRouter.delete('/:id', async (request, response, next) => {
-  const id = request.params.id
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const userId = decodedToken.id
+  const blogId = request.params.id
 
   try {
-    await Blog.findByIdAndDelete(id)
-    response.status(204).end()
+    const blog = await Blog.findById(blogId)
+    
+    // Check if blog exists
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' })
+    }
+
+    // Delete blog if request user id matches blog user id
+    if (blog.user.toString() === userId.toString()) {
+      await Blog.findByIdAndDelete(blogId)
+      response.status(204).end()
+    } else {
+      response.status(403).json({ error: 'unauthorized to delete this blog' })
+    }
   } catch(error) {
     next(error)
   }
