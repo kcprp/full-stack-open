@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -11,6 +12,8 @@ const App = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
+  const [message, setMessage] = useState(null)
+  const [color, setColor] = useState('green')
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -36,12 +39,14 @@ const App = () => {
       localStorage.setItem(
         'loggedBlogappUser', JSON.stringify(user)
       )
-      console.log(user.token)
       blogService.setToken(user.token)
       setUser(user)
       setUsername('')
       setPassword('')
     } catch (exception) {
+      setMessage(exception.response.data.error)
+      setColor('red')
+      setTimeout(() => {setMessage(null)}, 3000);
       console.error('Wrong credentials')
     }
   }
@@ -82,13 +87,18 @@ const App = () => {
       const blog = await blogService.create(
         { title, author, url }
       )
-      console.log(blog)
       setBlogs(blogs.concat(blog))
+      const message = `a new blog ${title} by ${author} added`
+      setMessage(message)
+      setColor('green')
+      setTimeout(() => {setMessage(null)}, 3000);
       setTitle('')
       setAuthor('')
       setUrl('')
     } catch(exception) {
-      console.error(exception)
+       setMessage(exception.response.data.error)
+      setColor('red')
+      setTimeout(() => {setMessage(null)}, 3000);
     }
   }
 
@@ -132,6 +142,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
+        <Notification message={message} color={color} />
         {loginForm()}
       </div>
     )
@@ -140,6 +151,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+      <Notification message={message} color={color} />
       <p>{user.name} logged in</p>
       <button onClick={handleLogout}>logout</button>
       {createForm()}
