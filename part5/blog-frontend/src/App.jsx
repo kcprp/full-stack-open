@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import Togglable from './components/Togglable'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -9,9 +12,6 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [message, setMessage] = useState(null)
   const [color, setColor] = useState('green')
 
@@ -57,38 +57,22 @@ const App = () => {
   }
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-        <input
-          type="text"
-          value={username}
-          name="Username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
-      </div>
-      <div>
-        password
-        <input
-          type="password"
-          value={password}
-          name="Password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button type="submit">login</button>
-    </form>
+    <Togglable buttonLabel="log in">
+      <LoginForm
+        handleSubmit={handleLogin}
+        handleUsernameChange={({ target}) => setUsername(target.value)}
+        handlePasswordChange={({ target}) => setPassword(target.value)}
+        username={username}
+        password={password}
+      />
+    </Togglable>
   )
 
-  const handleCreate = async (event) => {
-    event.preventDefault()
-
+  const addBlog = async (blogObject) => {
     try {
-      const blog = await blogService.create(
-        { title, author, url }
-      )
+      const blog = await blogService.create(blogObject)
       setBlogs(blogs.concat(blog))
-      const message = `a new blog ${title} by ${author} added`
+      const message = `a new blog ${blog.title} by ${blog.author} added`
       setMessage(message)
       setColor('green')
       setTimeout(() => {setMessage(null)}, 3000);
@@ -96,46 +80,16 @@ const App = () => {
       setAuthor('')
       setUrl('')
     } catch(exception) {
-       setMessage(exception.response.data.error)
+      setMessage(exception.response.data.error)
       setColor('red')
-      setTimeout(() => {setMessage(null)}, 3000);
+      setTimeout(() => {setMessage(null), 3000})
     }
   }
 
-  const createForm = () => (
-    <div>
-      <h2>create new</h2>
-      <form onSubmit={handleCreate}>
-        <div>
-          title:
-          <input
-            type='text'
-            value={title}
-            name="Title"
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-        <div>
-          author:
-          <input
-            type='text'
-            value={author}
-            name="Author"
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-        <div>
-          url:
-          <input
-            type='text'
-            value={url}
-            name="Url"
-            onChange={({ target }) => setUrl(target.value)}
-          />
-        </div>
-        <button type="submit">create</button>
-      </form>
-    </div>
+  const blogForm = () => (
+    <Togglable buttonLabel="new blog">
+      <BlogForm createBlog={addBlog} />
+    </Togglable>
   )
 
   if (user === null) {
@@ -154,7 +108,7 @@ const App = () => {
       <Notification message={message} color={color} />
       <p>{user.name} logged in</p>
       <button onClick={handleLogout}>logout</button>
-      {createForm()}
+      {blogForm()}
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
