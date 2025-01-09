@@ -16,10 +16,11 @@ const App = () => {
   const [color, setColor] = useState('green')
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
-  }, [])
+    blogService.getAll().then(blogs => {
+      const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
+      setBlogs( sortedBlogs )
+    }
+  )}, [])
 
   useEffect(() => {
     const loggedUser = window.localStorage.getItem('loggedBlogappUser')
@@ -102,7 +103,7 @@ const App = () => {
     }
     const blog = await blogService
       .update(blogObject.id, updatedBlog)
-      
+
     const updatedBlogs = blogs.map(b => 
       b.id === blogObject.id 
         ? { ...b, likes: blog.likes }
