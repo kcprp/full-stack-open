@@ -92,6 +92,25 @@ const App = () => {
     </Togglable>
   )
 
+  const handleLike = async (blogObject) => {
+    const updatedBlog = {
+      user: blogObject.user.id,
+      likes: blogObject.likes + 1,
+      author: blogObject.author,
+      title: blogObject.title,
+      url: blogObject.url
+    }
+    const blog = await blogService
+      .update(blogObject.id, updatedBlog)
+      
+    const updatedBlogs = blogs.map(b => 
+      b.id === blogObject.id 
+        ? { ...b, likes: blog.likes }
+        : b
+    )
+    setBlogs(updatedBlogs)
+  } 
+
   if (user === null) {
     return (
       <div>
@@ -110,7 +129,7 @@ const App = () => {
       <button onClick={handleLogout} style={{ marginLeft: '10px' }}>logout</button>
       {blogForm()}
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+        <Blog key={blog.id} blog={blog} handleLike={handleLike} />
       )}
     </div>
   )
