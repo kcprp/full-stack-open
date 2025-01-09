@@ -27,6 +27,7 @@ const App = () => {
     if (loggedUser) {
       const user = JSON.parse(loggedUser)
       setUser(user)
+      blogService.setToken(user.token)
     }
   }, [])
 
@@ -112,6 +113,21 @@ const App = () => {
     setBlogs(updatedBlogs)
   } 
 
+  const removeBlog = async (blog) => {
+    try {
+      const confirmMessage = `Remove blog ${blog.title} by ${blog.author}`
+      if (window.confirm(confirmMessage)) {
+        await blogService.remove(blog.id)
+        const updatedBlogs = blogs.filter(b => b.id !== blog.id)
+        setBlogs(updatedBlogs)
+      }
+    } catch(exception) {
+      setMessage(exception.response.data.error)
+      setColor('red')
+      setTimeout(() => setMessage(null), 3000)
+    }
+  }
+
   if (user === null) {
     return (
       <div>
@@ -130,7 +146,12 @@ const App = () => {
       <button onClick={handleLogout} style={{ marginLeft: '10px' }}>logout</button>
       {blogForm()}
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} handleLike={handleLike} />
+        <Blog key={blog.id} 
+              blog={blog} 
+              handleLike={handleLike} 
+              removeBlog={removeBlog}
+              username={user.username}
+              />
       )}
     </div>
   )
