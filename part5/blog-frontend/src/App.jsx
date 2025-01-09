@@ -106,8 +106,8 @@ const App = () => {
     <div>
       <h2>blogs</h2>
       <Notification message={message} color={color} />
-      <p>{user.name} logged in</p>
-      <button onClick={handleLogout}>logout</button>
+      {user.name} logged in
+      <button onClick={handleLogout} style={{ marginLeft: '10px' }}>logout</button>
       {blogForm()}
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
