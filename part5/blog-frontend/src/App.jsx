@@ -20,7 +20,7 @@ const App = () => {
       const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
       setBlogs( sortedBlogs )
     }
-  )}, [])
+    )}, [])
 
   useEffect(() => {
     const loggedUser = window.localStorage.getItem('loggedBlogappUser')
@@ -48,7 +48,7 @@ const App = () => {
     } catch (exception) {
       setMessage(exception.response.data.error)
       setColor('red')
-      setTimeout(() => {setMessage(null)}, 3000);
+      setTimeout(() => {setMessage(null)}, 3000)
       console.error('Wrong credentials')
     }
   }
@@ -62,8 +62,8 @@ const App = () => {
     <Togglable buttonLabel="log in">
       <LoginForm
         handleSubmit={handleLogin}
-        handleUsernameChange={({ target}) => setUsername(target.value)}
-        handlePasswordChange={({ target}) => setPassword(target.value)}
+        handleUsernameChange={({ target }) => setUsername(target.value)}
+        handlePasswordChange={({ target }) => setPassword(target.value)}
         username={username}
         password={password}
       />
@@ -77,10 +77,7 @@ const App = () => {
       const message = `a new blog ${blog.title} by ${blog.author} added`
       setMessage(message)
       setColor('green')
-      setTimeout(() => {setMessage(null)}, 3000);
-      setTitle('')
-      setAuthor('')
-      setUrl('')
+      setTimeout(() => {setMessage(null)}, 3000)
     } catch(exception) {
       setMessage(exception.response.data.error)
       setColor('red')
@@ -105,13 +102,13 @@ const App = () => {
     const blog = await blogService
       .update(blogObject.id, updatedBlog)
 
-    const updatedBlogs = blogs.map(b => 
-      b.id === blogObject.id 
+    const updatedBlogs = blogs.map(b =>
+      b.id === blogObject.id
         ? { ...b, likes: blog.likes }
         : b
     )
     setBlogs(updatedBlogs)
-  } 
+  }
 
   const removeBlog = async (blog) => {
     try {
@@ -146,12 +143,12 @@ const App = () => {
       <button onClick={handleLogout} style={{ marginLeft: '10px' }}>logout</button>
       {blogForm()}
       {blogs.map(blog =>
-        <Blog key={blog.id} 
-              blog={blog} 
-              handleLike={handleLike} 
-              removeBlog={removeBlog}
-              username={user.username}
-              />
+        <Blog key={blog.id}
+          blog={blog}
+          handleLike={handleLike}
+          removeBlog={removeBlog}
+          username={user.username}
+        />
       )}
     </div>
   )
