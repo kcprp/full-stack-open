@@ -29,7 +29,7 @@ const LoginForm = ({
   )
 }
 
-LoginForm.PropTypes = {
+LoginForm.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   handleUsernameChange: PropTypes.func.isRequired,
   handlePasswordChange: PropTypes.func.isRequired,
