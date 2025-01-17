@@ -31,4 +31,25 @@ describe('<Blog />', () => {
     expect(url).toBeNull()
     expect(likes).toBeNull()
   })
+
+  test('url and likes are shown when the `view` button is clicked', async () => {
+    const user = userEvent.setup()
+    const button = screen.getByText('view')
+    
+    // Elements not visible initially
+    expect(screen.queryByText('test-blog.com')).toBeNull()
+    expect(screen.queryByText('likes 2137')).toBeNull()
+  
+    await user.click(button)
+  
+    // Elements visible after user action
+    const url = screen.getByText('test-blog.com')
+    const likes = screen.getByText('likes 2137')
+  
+    expect(url).toBeVisible()
+    expect(likes).toBeVisible()
+    
+    // Verify button text changes
+    expect(button).toHaveTextContent('hide')
+  })
 })
