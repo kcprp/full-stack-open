@@ -3,9 +3,7 @@ import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
 
 describe('<Blog />', () => {
-  let container
-
-  beforeEach(() => {
+  test('renders blog\'s title and author, but not URL or likes by default', () => {
     const blog = {
       title: 'This is a test blog',
       author: 'kcprp',
@@ -13,10 +11,8 @@ describe('<Blog />', () => {
       likes: '2137'
     }
 
-    container = render(<Blog blog={blog} />).container
-  })
+    render(<Blog blog={blog} />)
 
-  test('renders blog\'s title and author, but not URL or likes by default', () => {
     // Visible
     const title = screen.getByText('This is a test blog', { exact: false })
     const author = screen.getByText('kcprp', { exact: false })
@@ -33,6 +29,15 @@ describe('<Blog />', () => {
   })
 
   test('url and likes are shown when the `view` button is clicked', async () => {
+    const blog = {
+      title: 'This is a test blog',
+      author: 'kcprp',
+      url: 'test-blog.com',
+      likes: '2137'
+    }
+
+    render(<Blog blog={blog} />)
+
     const user = userEvent.setup()
     const button = screen.getByText('view')
     
@@ -51,5 +56,29 @@ describe('<Blog />', () => {
     
     // Verify button text changes
     expect(button).toHaveTextContent('hide')
+  })
+
+  test('test handleLike', async () => {
+    const blog = {
+      title: 'This is a test blog',
+      author: 'kcprp',
+      url: 'test-blog.com',
+      likes: '2137'
+    }
+
+    const mockHandler = vi.fn()
+    render(<Blog blog={blog} handleLike={mockHandler} />)
+
+    const user = userEvent.setup()
+    // Expand blog
+    const viewButton = screen.getByText('view')
+    await user.click(viewButton)
+
+    // Find like button and interact
+    const likeButton = screen.getByText('like')
+    await user.click(likeButton)
+    await user.click(likeButton)
+
+    expect(mockHandler.mock.calls).toHaveLength(2)
   })
 })
