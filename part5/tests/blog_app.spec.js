@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith } = require('./helper')
+const { loginWith, createBlog } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -29,6 +29,24 @@ describe('Blog app', () => {
     test('fails with wrong credentials', async( { page }) => {
       await loginWith(page, 'test', 'wrongPassword')
       await expect(page.getByText('Test User logged in')).not.toBeVisible()
+    })
+  })
+
+  describe('When logged in', () => {
+    beforeEach(async ({ page, request }) => {
+      await loginWith(page, 'test', '1234')
+    })
+
+    test.only('a new blog can be created', async ({ page }) => {
+      const testBlog = {
+        title: 'Test Blog',
+        author: 'Test Author',
+        url: 'test-blog.com'
+      }
+      await createBlog(page, testBlog)
+      
+      setTimeout(() => {}, 5000); // Wait for notifaciton to pass
+      await expect(page.getByText('a new blog Test Blog by Test Author added')).toBeVisible()
     })
   })
 })
