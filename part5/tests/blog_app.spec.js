@@ -37,7 +37,7 @@ describe('Blog app', () => {
       await loginWith(page, 'test', '1234')
     })
 
-    test.only('a new blog can be created', async ({ page }) => {
+    test('a new blog can be created', async ({ page }) => {
       const testBlog = {
         title: 'Test Blog',
         author: 'Test Author',
@@ -47,6 +47,24 @@ describe('Blog app', () => {
       
       setTimeout(() => {}, 5000); // Wait for notifaciton to pass
       await expect(page.getByText('a new blog Test Blog by Test Author added')).toBeVisible()
+    })
+
+    describe('When blog created', () => {
+      beforeEach(async ({ page, request }) => {
+        const testBlog = {
+          title: 'Test Blog',
+          author: 'Test Author',
+          url: 'test-blog.com'
+        }
+        await createBlog(page, testBlog) 
+      })
+
+      test.only('a blog can be liked', async ({ page }) => {
+        const blogDiv = await page.getByText('Test Blog').locator('..')
+        await blogDiv.getByRole('button', { name: 'view' }).click()
+        await blogDiv.getByRole('button', { name: 'like'}).click()
+        await expect(blogDiv.getByText('likes 1')).toBeVisible()
+      })
     })
   })
 })

@@ -18,17 +18,16 @@ const Blog = ({ blog, handleLike, removeBlog, username }) => {
         <button onClick={() => setHidden(!hidden)} style={{ marginLeft: '5px' }}>{hidden ? 'view' : 'hide'}</button>
       </div>
       {!hidden &&
-    <div>
-      <div>{blog.url}</div>
       <div>
-        likes {blog.likes}
-        <button onClick={() => handleLike(blog)} style={{ marginLeft: '5px' }}>like</button>
+        <div>{blog.url}</div>
+        <div>
+          likes {blog.likes}
+          <button onClick={() => handleLike(blog)} style={{ marginLeft: '5px' }}>like</button>
+        </div>
+        {blog?.user?.username === username &&
+        <button onClick={() => removeBlog(blog)}>remove</button>
+        }
       </div>
-      {/* <div>{blog.author}</div> */}
-      {blog?.user?.username === username &&
-      <button onClick={() => removeBlog(blog)}>remove</button>
-      }
-    </div>
       }
     </div>
   )}
