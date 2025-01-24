@@ -1,3 +1,11 @@
 notes-backend-example
 notes-frontend-example
 blog-backend
+tests-playwright-notes
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
