@@ -50,7 +50,7 @@ describe('Blog app', () => {
       await expect(page.getByText('a new blog Test Blog by Test Author added')).toBeVisible()
     })
 
-    test.only('multiple blogs can be created', async ({ page }) => {
+    test('multiple blogs can be created', async ({ page }) => {
       const testBlog = { title: 'Test Blog', author: 'Test Author', url: 'test-blog.com' } 
       const testBlog2 = { title: 'Test Blog 2', author: 'Test Author', url: 'test-blog2.com' }
       const testBlog3 = { title: 'Test Blog 3', author: 'Test Author', url: 'test-blog3.com' }
@@ -84,6 +84,18 @@ describe('Blog app', () => {
         await blogDiv.getByRole('button', { name: 'view' }).click()
         await blogDiv.getByRole('button', { name: 'like'}).click()
         await expect(blogDiv.getByText('likes 1')).toBeVisible()
+      })
+
+      test.only('a blog can be deleted', async ({ page }) => {
+        const blogDiv = await page.getByText('Test Blog').locator('..')
+        await blogDiv.getByRole('button', { name: 'view' }).click()
+        
+        page.on('dialog', dialog => dialog.accept())
+        await blogDiv.getByRole('button', { name: 'remove' }).click()
+        
+        // Wait for the blogDiv element to be removed from the DOM
+        await expect(blogDiv).toBeHidden()
+        
       })
     })
   })
