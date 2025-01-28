@@ -24,7 +24,7 @@ const Blog = ({ blog, handleLike, removeBlog, username }) => {
           likes {blog.likes}
           <button onClick={() => handleLike(blog)} style={{ marginLeft: '5px' }}>like</button>
         </div>
-        {blog?.user?.username === username &&
+        {blog.user && blog.user.username === username &&
         <button onClick={() => removeBlog(blog)}>remove</button>
         }
       </div>

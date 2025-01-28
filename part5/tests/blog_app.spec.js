@@ -43,10 +43,29 @@ describe('Blog app', () => {
         author: 'Test Author',
         url: 'test-blog.com'
       }
+      await page.getByRole('button', { name: 'new blog' }).click()
       await createBlog(page, testBlog)
       
       setTimeout(() => {}, 5000); // Wait for notifaciton to pass
       await expect(page.getByText('a new blog Test Blog by Test Author added')).toBeVisible()
+    })
+
+    test.only('multiple blogs can be created', async ({ page }) => {
+      const testBlog = { title: 'Test Blog', author: 'Test Author', url: 'test-blog.com' } 
+      const testBlog2 = { title: 'Test Blog 2', author: 'Test Author', url: 'test-blog2.com' }
+      const testBlog3 = { title: 'Test Blog 3', author: 'Test Author', url: 'test-blog3.com' }
+
+      await page.getByRole('button', { name: 'new blog' }).click()
+
+      // Create blogs and wait for notifications after each creation
+      await createBlog(page, testBlog)
+      await expect(page.getByText(`a new blog ${testBlog.title} by ${testBlog.author} added`)).toBeVisible()
+      
+      await createBlog(page, testBlog2)
+      await expect(page.getByText(`a new blog ${testBlog2.title} by ${testBlog2.author} added`)).toBeVisible()
+      
+      await createBlog(page, testBlog3)
+      await expect(page.getByText(`a new blog ${testBlog3.title} by ${testBlog3.author} added`)).toBeVisible()
     })
 
     describe('When blog created', () => {
@@ -56,10 +75,11 @@ describe('Blog app', () => {
           author: 'Test Author',
           url: 'test-blog.com'
         }
+        await page.getByRole('button', { name: 'new blog' }).click()
         await createBlog(page, testBlog) 
       })
 
-      test.only('a blog can be liked', async ({ page }) => {
+      test('a blog can be liked', async ({ page }) => {
         const blogDiv = await page.getByText('Test Blog').locator('..')
         await blogDiv.getByRole('button', { name: 'view' }).click()
         await blogDiv.getByRole('button', { name: 'like'}).click()

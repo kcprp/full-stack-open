@@ -6,11 +6,11 @@ const loginWith = async (page, username, password) => {
 }
 
 const createBlog = async (page, blog) => {
-  await page.getByRole('button', { name: 'new blog' }).click()
   await page.getByTestId('title').fill(blog.title)
   await page.getByTestId('author').fill(blog.author)
   await page.getByTestId('url').fill(blog.url)
   await page.getByRole('button', { name: 'save' }).click()
+  await page.getByText(`${blog.title} by ${blog.author}`)
 }
 
 module.exports = { loginWith, createBlog }
