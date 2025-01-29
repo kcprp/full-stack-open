@@ -12,7 +12,7 @@ const Blog = ({ blog, handleLike, removeBlog, username }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div className='blog' style={blogStyle}>
       <div>
         {blog.title} by {blog.author}
         <button onClick={() => setHidden(!hidden)} style={{ marginLeft: '5px' }}>{hidden ? 'view' : 'hide'}</button>

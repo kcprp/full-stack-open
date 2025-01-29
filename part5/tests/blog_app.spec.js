@@ -11,7 +11,14 @@ describe('Blog app', () => {
         password: '1234'
       }
     })
-    page.goto('/')
+    await request.post('/api/users', {
+      data: {
+        name: 'Test User 2',
+        username: 'test2',
+        password: '1234'
+      }
+    })
+    await page.goto('/')
   })
 
   test('Login form is shown', async ({ page }) => {
@@ -46,7 +53,7 @@ describe('Blog app', () => {
       await page.getByRole('button', { name: 'new blog' }).click()
       await createBlog(page, testBlog)
       
-      setTimeout(() => {}, 5000); // Wait for notifaciton to pass
+      // setTimeout(() => {}, 5000); // Wait for notifaciton to pass
       await expect(page.getByText('a new blog Test Blog by Test Author added')).toBeVisible()
     })
 
@@ -86,7 +93,7 @@ describe('Blog app', () => {
         await expect(blogDiv.getByText('likes 1')).toBeVisible()
       })
 
-      test.only('a blog can be deleted', async ({ page }) => {
+      test('a blog can be deleted', async ({ page }) => {
         const blogDiv = await page.getByText('Test Blog').locator('..')
         await blogDiv.getByRole('button', { name: 'view' }).click()
         
@@ -95,7 +102,59 @@ describe('Blog app', () => {
         
         // Wait for the blogDiv element to be removed from the DOM
         await expect(blogDiv).toBeHidden()
+      })
+
+      test('only the blog creator can delete it', async({ page }) => {
+        // Log in a different user
+        await page.getByRole('button', { name: 'logout'}).click()
+        await loginWith(page, 'test2', '1234')
+  
+        // Check that remove button is missing
+        const blogDiv = await page.getByText('Test Blog').locator('..')
+        await blogDiv.getByRole('button', { name: 'view' }).click()
+  
+        await expect(blogDiv.getByRole('button', { name: 'remove'})).not.toBeVisible()
+      })
+    })
+
+    describe('when multiple blogs created', () => {
+      let blogs = []
+      beforeEach(async ({ page, request }) => {
+        blogs = [
+          { title: 'Second Blog', author: 'Test Author', url: 'test-blog.com', 'likes': 3 },
+          { title: 'Fourth Blog', author: 'Test Author', url: 'test-blog.com', 'likes': 1 },
+          { title: 'First Blog', author: 'Test Author', url: 'test-blog.com', 'likes': 4 },
+          { title: 'Third Blog', author: 'Test Author', url: 'test-blog.com', 'likes': 2 }
+        ]
+
+        await page.getByRole('button', { name: 'new blog' }).click()
+        // Create blogs and like blogs
+        for (const [i, blog] of blogs.entries()) {
+          await createBlog(page, blog)
+          const blogDiv = await page.getByText(blog.title).locator('..')
+          await page.getByRole('button', { name: 'view' }).nth(i).click()
+          for (let i = 0; i < blog.likes; i++) {
+            await page.getByRole('button', { name: 'like'}).click()
+          }
+          await blogDiv.getByRole('button', { name: 'hide' }).click()
+          }
+      })
+
+
+      test('blogs are arranged in the order according to the likes', async ({ page }) => {
+        await page.getByRole('button', { name: 'logout'}).click()
+        await loginWith(page, 'test2', '1234')
         
+        // Wait for blog list to update
+        await page.waitForSelector('.blog')
+        
+        const blogs = await page.locator('.blog').all()
+        const expectedOrder = ['First Blog', 'Second Blog', 'Third Blog', 'Fourth Blog']
+        
+        for (let i = 0; i < blogs.length; i++) {
+          const blogTitle = await blogs[i].textContent()
+          expect(blogTitle).toContain(expectedOrder[i])
+        }
       })
     })
   })

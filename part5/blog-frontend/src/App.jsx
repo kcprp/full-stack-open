@@ -16,11 +16,15 @@ const App = () => {
   const [color, setColor] = useState('green')
 
   useEffect(() => {
-    blogService.getAll().then(blogs => {
-      const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
-      setBlogs( sortedBlogs )
+    if (user) {
+      blogService.getAll().then(blogs => {
+        const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
+        setBlogs(sortedBlogs)
+      })
+    } else {
+      setBlogs([])
     }
-    )}, [])
+  }, [user])
 
   useEffect(() => {
     const loggedUser = window.localStorage.getItem('loggedBlogappUser')
@@ -73,7 +77,7 @@ const App = () => {
   const addBlog = async (blogObject) => {
     try {
       const blog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(blog))
+      setBlogs(blogs.concat(blog).sort((a, b) => b.likes - a.likes))
       const message = `a new blog ${blog.title} by ${blog.author} added`
       setMessage(message)
       setColor('green')
@@ -106,7 +110,8 @@ const App = () => {
       b.id === blogObject.id
         ? { ...b, likes: blog.likes }
         : b
-    )
+    ).sort((a, b) => b.likes - a.likes)
+    
     setBlogs(updatedBlogs)
   }
 
@@ -116,7 +121,7 @@ const App = () => {
       if (window.confirm(confirmMessage)) {
         await blogService.remove(blog.id)
         const updatedBlogs = blogs.filter(b => b.id !== blog.id)
-        setBlogs(updatedBlogs)
+        setBlogs(updatedBlogs.sort((a, b) => b.likes - a.likes))
       }
     } catch(exception) {
       setMessage(exception.response.data.error)
