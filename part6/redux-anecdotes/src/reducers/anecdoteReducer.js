@@ -18,6 +18,7 @@ const asObject = (anecdote) => {
 }
 
 const initialState = anecdotesAtStart.map(asObject)
+  .sort((a, b) => b.votes - a.votes)
 
 const reducer = (state = initialState, action) => {
   console.log('state now: ', state)
@@ -32,6 +33,7 @@ const reducer = (state = initialState, action) => {
         votes: anecdoteToChange.votes + 1
       }
       return state.map(a => a.id !== id ? a : changedAnecdote)
+        .sort((a, b) => b.votes - a.votes)
     }
     case 'NEW_ANECDOTE': 
       return [...state, action.payload]

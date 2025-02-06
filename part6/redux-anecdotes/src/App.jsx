@@ -6,7 +6,6 @@ const App = () => {
   const anecdotes = useSelector(state => state)
   const dispatch = useDispatch()
 
-
   const addAnecdote = (event) => {
     event.preventDefault()
     const content = event.target.anecdote.value
