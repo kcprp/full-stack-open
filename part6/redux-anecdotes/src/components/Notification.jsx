@@ -8,6 +8,7 @@ const Notification = () => {
     borderWidth: 1
   }
   return (
+    notification === '' ? null :
     <div style={style}>
       {notification}
     </div>
