@@ -6,13 +6,17 @@ import { useEffect } from 'react'
 import noteService from './services/anecdotes'
 import { setAnecdotes } from './reducers/anecdoteReducer'
 import { useDispatch } from 'react-redux'
+import { sortAnecdotes } from './reducers/anecdoteReducer'
 
 const App = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
     noteService
-      .getAll().then(anecdotes => dispatch(setAnecdotes(anecdotes)))
+      .getAll().then(anecdotes => {
+        const sortedAnecdotes = sortAnecdotes(anecdotes)
+        dispatch(setAnecdotes(sortedAnecdotes))
+      })
   }, [])
 
   return (
