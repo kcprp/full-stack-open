@@ -27,8 +27,8 @@ const calculateExercies = (exercises: number[], target: number): Result => {
         ratingDescription,
         target,
         average
-    }
-}
+    };
+};
 
 try {
     if (process.argv.length < 4) throw new Error('Not enough arguments');
