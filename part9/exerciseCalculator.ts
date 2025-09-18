@@ -1,4 +1,4 @@
-interface Result {
+export interface Result {
     periodLength: number,
     trainingDays: number,
     success: boolean,
@@ -8,7 +8,7 @@ interface Result {
     average: number}
 
 
-const calculateExercies = (exercises: number[], target: number): Result => {
+export const calculateExercies = (exercises: number[], target: number): Result => {
     if (exercises.length === 0) throw new Error('No exercises provided');
     if (target <= 0) throw new Error('Target must be positive');
     if (exercises.some(exercise => exercise < 0)) throw new Error('Exercises must be positive');
