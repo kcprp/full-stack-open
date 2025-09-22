@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import { getDiagnoses } from './services/diagnosisService';
-import { getSecurePatients } from './services/patientService';
-import { Diagnosis, SecurePatient } from './types';
+import { Diagnosis } from './types';
 import { Response } from 'express';
+import patientsRouter from './routes/patients';
 
 const app = express();
 
@@ -21,9 +21,8 @@ app.get('/api/diagnoses', (_req, res: Response<Diagnosis[]>) => {
   res.send(getDiagnoses());
 });
 
-app.get('/api/patients', (_req, res: Response<SecurePatient[]>) => {
-  res.send(getSecurePatients());
-});
+app.use('/api/patients', patientsRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
