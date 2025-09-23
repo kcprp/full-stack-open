@@ -1,5 +1,5 @@
 import { Patient } from "../types";
-import toNewPatientEntry from "../utils";
+import { NewPatientSchema } from "../utils";
 
 const data = [
   {
@@ -45,9 +45,11 @@ const data = [
 ];
 
 const patients: Patient[] = data.map(obj => {
-    const object = toNewPatientEntry(obj) as Patient;
-    object.id = obj.id;
-    return object;
+    const validatedData = NewPatientSchema.parse(obj);
+    return {
+        ...validatedData,
+        id: obj.id
+    };
 });
 
 export default patients;
