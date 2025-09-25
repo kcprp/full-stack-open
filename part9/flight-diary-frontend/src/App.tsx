@@ -12,6 +12,7 @@ function App() {
     weather: '',
     comment: ''
   })
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     getDiaries()
@@ -29,21 +30,26 @@ function App() {
       comment: newEntry.comment
     }
 
-    createDiaryEntry(validatedEntry).then((data: DiaryEntry) => {
-      const nonSensitiveData: NonSensitiveDiaryEntry = {
-        id: data.id,
-        date: data.date,
-        visibility: data.visibility,
-        weather: data.weather
-      };
-      setDiaries(diaries.concat(nonSensitiveData))
-      setNewEntry({
-        date: '',
-        visibility: '',
-        weather: '',
-        comment: ''
+    createDiaryEntry(validatedEntry)
+      .then((data: DiaryEntry) => {
+        const nonSensitiveData: NonSensitiveDiaryEntry = {
+          id: data.id,
+          date: data.date,
+          visibility: data.visibility,
+          weather: data.weather
+        };
+        setDiaries(diaries.concat(nonSensitiveData))
+        setNewEntry({
+          date: '',
+          visibility: '',
+          weather: '',
+          comment: ''
+        })
+        setError('')
       })
-    })
+      .catch((error: Error) => {
+        setError(error.message)
+      })
   }
 
   const updateNewEntry = (field: keyof NewDiaryEntry, value: string) => {
@@ -53,6 +59,12 @@ function App() {
   return (
     <div>
       <h2>Add a new entry</h2>
+
+      {error && (
+        <div style={{ color: 'red', marginBottom: '10px' }}>
+          Error: {error}
+        </div>
+      )}
 
       <DiaryForm 
         onSubmit={submitDiaryEntry}
