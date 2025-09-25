@@ -23,32 +23,105 @@ const DiaryForm = ({ onSubmit, setDate, setVisibility, setWeather, setComment, n
       </div>
       <div>
         <label htmlFor="visibility">Visibility</label>
-        <select
-          id="visibility"
-          value={newEntry.visibility}
-          onChange={e => setVisibility(e.target.value)}
-        >
-          <option value="">Select visibility</option>
-          <option value="great">Great</option>
-          <option value="good">Good</option>
-          <option value="ok">Ok</option>
-          <option value="poor">Poor</option>
-        </select>
+        <div id="visibility" role="radiogroup" aria-labelledby="visibility-label">
+          <span id="visibility-label" style={{ display: 'none' }}>Visibility</span>
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="great"
+              checked={newEntry.visibility === 'great'}
+              onChange={e => setVisibility(e.target.value)}
+            />
+            Great
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="good"
+              checked={newEntry.visibility === 'good'}
+              onChange={e => setVisibility(e.target.value)}
+            />
+            Good
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="ok"
+              checked={newEntry.visibility === 'ok'}
+              onChange={e => setVisibility(e.target.value)}
+            />
+            Ok
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="poor"
+              checked={newEntry.visibility === 'poor'}
+              onChange={e => setVisibility(e.target.value)}
+            />
+            Poor
+          </label>
+        </div>
       </div>
       <div>
         <label htmlFor="weather">Weather</label>
-        <select
-          id="weather"
-          value={newEntry.weather}
-          onChange={e => setWeather(e.target.value)}
-        >
-          <option value="">Select weather</option>
-          <option value="sunny">Sunny</option>
-          <option value="rainy">Rainy</option>
-          <option value="cloudy">Cloudy</option>
-          <option value="stormy">Stormy</option>
-          <option value="windy">Windy</option>
-        </select>
+        <div id="weather" role="radiogroup" aria-labelledby="weather-label">
+          <span id="weather-label" style={{ display: 'none' }}>Weather</span>
+          <label>
+            <input
+              type="radio"
+              name="weather"
+              value="sunny"
+              checked={newEntry.weather === 'sunny'}
+              onChange={e => setWeather(e.target.value)}
+            />
+            Sunny
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="weather"
+              value="rainy"
+              checked={newEntry.weather === 'rainy'}
+              onChange={e => setWeather(e.target.value)}
+            />
+            Rainy
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="weather"
+              value="cloudy"
+              checked={newEntry.weather === 'cloudy'}
+              onChange={e => setWeather(e.target.value)}
+            />
+            Cloudy
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="weather"
+              value="stormy"
+              checked={newEntry.weather === 'stormy'}
+              onChange={e => setWeather(e.target.value)}
+            />
+            Stormy
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="weather"
+              value="windy"
+              checked={newEntry.weather === 'windy'}
+              onChange={e => setWeather(e.target.value)}
+            />
+            Windy
+          </label>
+        </div>
       </div>
       <div>
         <label htmlFor="comment">Comment</label>
