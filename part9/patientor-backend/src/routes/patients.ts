@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { getSecurePatients, addPatient } from "../services/patientService";
-import { NewPatientEntry, SecurePatient, Patient } from "../types";
+import { getSecurePatients, getPatientInfo, addPatient } from "../services/patientService";
+import { NewPatientEntry, SecurePatient, Patient, NonSensitivePatient } from "../types";
 import { NewPatientSchema } from "../utils";
 import { z } from 'zod';
 
@@ -8,6 +8,11 @@ const router = Router();
 
 router.get('/', (_req, res: Response<SecurePatient[]>) => {
   res.send(getSecurePatients());
+});
+
+router.get('/:id', (req, res: Response<NonSensitivePatient>) => {
+  const id = req.params.id;
+  res.send(getPatientInfo(id));
 });
 
 const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
