@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import patientService from "../../services/patients";
-import { Patient } from "../../types";
+import { Patient, Diagnosis } from "../../types";
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
@@ -17,7 +17,11 @@ const getGenderIcon = (gender: string) => {
   }
 };
 
-const PatientPage = () => {
+interface PatientPageProps {
+  diagnoses: Diagnosis[];
+}
+
+const PatientPage = ({ diagnoses }: PatientPageProps) => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [error, setError] = useState<boolean>(false);
   const { id } = useParams();
@@ -44,6 +48,10 @@ const PatientPage = () => {
     fetchUser(id);
   }, [id]);
 
+  const getNameFromCode = (code: string) => {
+    return diagnoses.find(diagnosis => diagnosis.code === code)?.name;
+  };
+
   if (!patient) return <h2>Loading...</h2>;
 
   if (error) return <h2 style={{ color: 'red' }}>Failed to load patient</h2>; 
@@ -65,7 +73,7 @@ const PatientPage = () => {
             <p>{entry.date} {entry.description}</p>
             <ul>
               {entry?.diagnosisCodes?.map(code =>
-                <li key={code}>{code}</li>
+                <li key={code}>{code} {getNameFromCode(code)}</li>
               )}
             </ul>
           </div>
