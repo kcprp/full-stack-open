@@ -30,6 +30,7 @@ interface SickLeave {
 }
 
 interface OccupationalHealthcareEntry extends BaseEntry {
+  type: "OccupationalHealthcare";
   employerName: string;
   sickLeave?: SickLeave
 }
@@ -40,7 +41,7 @@ interface Discharge {
 }
 
 interface HospitalEntry extends BaseEntry {
-  type: string;
+  type: "Hospital";
   discharge?: Discharge;
 }
 
@@ -66,3 +67,9 @@ export interface Patient {
 }
 
 export type PatientFormValues = Omit<Patient, "id" | "entries">;
+
+export const assertNever = (value: never): never => {
+  throw new Error(
+    `Unhandled discriminated union member: ${JSON.stringify(value)}`
+  );
+};

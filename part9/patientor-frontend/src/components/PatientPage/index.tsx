@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import patientService from "../../services/patients";
 import { Patient, Diagnosis } from "../../types";
+import Entry from "../Entry.tsx";
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
@@ -64,20 +65,27 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
           {getGenderIcon(patient.gender)}
         </div>
       </div>
+      <p>ssn: {patient.ssn}</p>
       <p>occupation: {patient.occupation}</p>
       {patient.entries && 
       <div>
         <h3>entries</h3>
         {patient.entries.map(entry =>
-          <div key={entry.id}>
-            <p>{entry.date} {entry.description}</p>
-            <ul>
-              {entry?.diagnosisCodes?.map(code =>
-                <li key={code}>{code} {getNameFromCode(code)}</li>
-              )}
-            </ul>
-          </div>
+          <Entry entry={entry} getNameFromCode={getNameFromCode} key={entry.id} />
         )}
+        <button 
+          style={{ 
+            backgroundColor: '#007bff', 
+            color: 'white', 
+            border: 'none', 
+            padding: '10px 20px', 
+            borderRadius: '5px',
+            marginTop: '10px',
+            cursor: 'pointer'
+          }}
+        >
+          ADD NEW ENTRY
+        </button>
       </div>
       }
     </div>
