@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NewPatientSchema } from "./utils";
+import { NewPatientSchema, NewEntrySchema } from "./utils";
 
 export interface Diagnosis {
   code: string,
@@ -33,6 +33,7 @@ interface SickLeave {
 }
 
 interface OccupationalHealthcareEntry extends BaseEntry {
+  type: "OccupationalHealthcare";
   employerName: string;
   sickLeave?: SickLeave
 }
@@ -43,7 +44,7 @@ interface Discharge {
 }
 
 interface HospitalEntry extends BaseEntry {
-  type: string;
+  type: "Hospital";
   discharge?: Discharge;
 }
 
@@ -71,5 +72,7 @@ export enum Gender {
 export type SecurePatient = Omit<Patient, 'ssn'>;
 
 export type NewPatientEntry = z.infer<typeof NewPatientSchema>;
+
+export type NewEntry = z.infer<typeof NewEntrySchema>;
 
 export type NonSensitivePatient = Omit<Patient, 'ssn' | 'entries'>;
