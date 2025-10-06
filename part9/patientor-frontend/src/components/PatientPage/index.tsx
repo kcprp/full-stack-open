@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import patientService from "../../services/patients";
 import { Patient, Diagnosis } from "../../types";
 import Entry from "../Entry.tsx";
+import AddEntryForm from "./AddEntryForm.tsx";
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
@@ -25,6 +26,7 @@ interface PatientPageProps {
 const PatientPage = ({ diagnoses }: PatientPageProps) => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [error, setError] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(false);
   const { id } = useParams();
 
   useEffect(() => {
@@ -67,6 +69,12 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
       </div>
       <p>ssn: {patient.ssn}</p>
       <p>occupation: {patient.occupation}</p>
+      <AddEntryForm 
+        id={id!}
+        visible={visible}
+        setVisible={setVisible}
+        setPatient={setPatient}
+      />
       {patient.entries && 
       <div>
         <h3>entries</h3>
@@ -83,6 +91,7 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
             marginTop: '10px',
             cursor: 'pointer'
           }}
+          onClick={() => setVisible(prev => !prev)}
         >
           ADD NEW ENTRY
         </button>
