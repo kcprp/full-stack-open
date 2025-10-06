@@ -1,36 +1,80 @@
 import { useState, Dispatch, SetStateAction } from "react";
 import patientService from '../../services/patients';
-import { Patient } from "../../types";
+import { Patient, Diagnosis } from "../../types";
 type AddEntryFormProps = {
   id: string,
   visible: boolean;
   setVisible: (visible: boolean) => void;
   setPatient: Dispatch<SetStateAction<Patient | null>>;
+  diagnoses: Diagnosis[];
 };
 
-const AddEntryForm = ({ id, visible, setVisible, setPatient }: AddEntryFormProps) => {
+const AddEntryForm = ({ id, visible, setVisible, setPatient, diagnoses }: AddEntryFormProps) => {
+  const [entryType, setEntryType] = useState<'HealthCheck' | 'Hospital' | 'OccupationalHealthcare'>('HealthCheck');
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [specialist, setSpecialist] = useState<string>('');
   const [healthCheckRating, setHealthCheckRating] = useState<number>(0);
-  const [codes, setCodes] = useState<string>('');
+  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [error, setError] = useState<string>('');
+  
+  // Hospital fields
+  const [dischargeDate, setDischargeDate] = useState<string>('');
+  const [dischargeCriteria, setDischargeCriteria] = useState<string>('');
+  
+  // OccupationalHealthcare fields
+  const [employerName, setEmployerName] = useState<string>('');
+  const [sickLeaveStart, setSickLeaveStart] = useState<string>('');
+  const [sickLeaveEnd, setSickLeaveEnd] = useState<string>('');
 
   if (!visible) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const healthCheckEntry = {
-      description: description,
-      date: date,
-      specialist: specialist,
-      type: "HealthCheck" as const,
-      healthCheckRating: healthCheckRating,
-      diagnosisCodes: codes.split(',').map(code => code.trim()).filter(code => code !== '')
+    
+    const baseEntry = {
+      description,
+      date,
+      specialist,
+      ...(selectedCodes.length > 0 && { diagnosisCodes: selectedCodes })
     };
 
     try {
-      const entry = await patientService.createEntry(id, healthCheckEntry);
+      let entry;
+      
+      if (entryType === 'HealthCheck') {
+        const newEntry = {
+          ...baseEntry,
+          type: "HealthCheck" as const,
+          healthCheckRating
+        };
+        entry = await patientService.createEntry(id, newEntry);
+      } else if (entryType === 'Hospital') {
+        const newEntry = {
+          ...baseEntry,
+          type: "Hospital" as const,
+          ...(dischargeDate && dischargeCriteria && {
+            discharge: {
+              date: dischargeDate,
+              criteria: dischargeCriteria
+            }
+          })
+        };
+        entry = await patientService.createEntry(id, newEntry);
+      } else { // OccupationalHealthcare
+        const newEntry = {
+          ...baseEntry,
+          type: "OccupationalHealthcare" as const,
+          employerName,
+          ...(sickLeaveStart && sickLeaveEnd && {
+            sickLeave: {
+              startDate: sickLeaveStart,
+              endDate: sickLeaveEnd
+            }
+          })
+        };
+        entry = await patientService.createEntry(id, newEntry);
+      }
       console.log(entry);
 
       setPatient((prevPatient: Patient | null) => {
@@ -41,18 +85,48 @@ const AddEntryForm = ({ id, visible, setVisible, setPatient }: AddEntryFormProps
         };
       });
 
+      // Reset all fields
       setDescription('');
       setDate('');
       setSpecialist('');
       setHealthCheckRating(0);
+      setSelectedCodes([]);
+      setDischargeDate('');
+      setDischargeCriteria('');
+      setEmployerName('');
+      setSickLeaveStart('');
+      setSickLeaveEnd('');
+      setError('');
       setVisible(false);
     } catch (error: unknown) {
-        setError(error instanceof Error ? error.message : String(error));
+      setError(error instanceof Error ? error.message : String(error));
     }
   };
 
   const handleCancel = () => {
+    setDescription('');
+    setDate('');
+    setSpecialist('');
+    setHealthCheckRating(0);
+    setSelectedCodes([]);
+    setDischargeDate('');
+    setDischargeCriteria('');
+    setEmployerName('');
+    setSickLeaveStart('');
+    setSickLeaveEnd('');
+    setError('');
     setVisible(false);
+  };
+
+  const handleDiagnosisChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = e.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
+    setSelectedCodes(selected);
   };
 
   const formStyle = {
@@ -116,9 +190,22 @@ const AddEntryForm = ({ id, visible, setVisible, setPatient }: AddEntryFormProps
           {error}
         </p>
       )}
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>New HealthCheck entry</h3>
+       <form onSubmit={handleSubmit} style={formStyle}>
+        <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>New {entryType} entry</h3>
         <div>
+          <div style={fieldStyle}>
+            <label htmlFor="entryType" style={labelStyle}>Entry Type</label>
+            <select
+              id="entryType"
+              value={entryType}
+              onChange={(e) => setEntryType(e.target.value as 'HealthCheck' | 'Hospital' | 'OccupationalHealthcare')}
+              style={inputStyle}
+            >
+              <option value="HealthCheck">Health Check</option>
+              <option value="Hospital">Hospital</option>
+              <option value="OccupationalHealthcare">Occupational Healthcare</option>
+            </select>
+          </div>
           <div style={fieldStyle}>
             <label htmlFor="description" style={labelStyle}>Description</label>
             <input
@@ -152,29 +239,99 @@ const AddEntryForm = ({ id, visible, setVisible, setPatient }: AddEntryFormProps
               required
             />
           </div>
+          {entryType === 'HealthCheck' && (
+            <div style={fieldStyle}>
+              <label htmlFor="healthCheckRating" style={labelStyle}>Healthcheck rating</label>
+              <select
+                id="healthCheckRating"
+                value={healthCheckRating}
+                onChange={(e) => setHealthCheckRating(Number(e.target.value))}
+                style={inputStyle}
+              >
+                <option value={0}>Healthy</option>
+                <option value={1}>Low Risk</option>
+                <option value={2}>High Risk</option>
+                <option value={3}>Critical Risk</option>
+              </select>
+            </div>
+          )}
+          {entryType === 'Hospital' && (
+            <>
+              <div style={fieldStyle}>
+                <label htmlFor="dischargeDate" style={labelStyle}>Discharge Date</label>
+                <input
+                  id="dischargeDate"
+                  type="date"
+                  value={dischargeDate}
+                  onChange={(e) => setDischargeDate(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={fieldStyle}>
+                <label htmlFor="dischargeCriteria" style={labelStyle}>Discharge Criteria</label>
+                <input
+                  id="dischargeCriteria"
+                  type="text"
+                  value={dischargeCriteria}
+                  onChange={(e) => setDischargeCriteria(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            </>
+          )}
+          {entryType === 'OccupationalHealthcare' && (
+            <>
+              <div style={fieldStyle}>
+                <label htmlFor="employerName" style={labelStyle}>Employer Name</label>
+                <input
+                  id="employerName"
+                  type="text"
+                  value={employerName}
+                  onChange={(e) => setEmployerName(e.target.value)}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+              <div style={fieldStyle}>
+                <label htmlFor="sickLeaveStart" style={labelStyle}>Sick Leave Start Date</label>
+                <input
+                  id="sickLeaveStart"
+                  type="date"
+                  value={sickLeaveStart}
+                  onChange={(e) => setSickLeaveStart(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={fieldStyle}>
+                <label htmlFor="sickLeaveEnd" style={labelStyle}>Sick Leave End Date</label>
+                <input
+                  id="sickLeaveEnd"
+                  type="date"
+                  value={sickLeaveEnd}
+                  onChange={(e) => setSickLeaveEnd(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            </>
+          )}
           <div style={fieldStyle}>
-            <label htmlFor="healthCheckRating" style={labelStyle}>Healthcheck rating</label>
+            <label htmlFor="codes" style={labelStyle}>Diagnosis codes (hold Ctrl/Cmd to select multiple)</label>
             <select
-              id="healthCheckRating"
-              value={healthCheckRating}
-              onChange={(e) => setHealthCheckRating(Number(e.target.value))}
-              style={inputStyle}
-            >
-              <option value={0}>Healthy</option>
-              <option value={1}>Low Risk</option>
-              <option value={2}>High Risk</option>
-              <option value={3}>Critical Risk</option>
-            </select>
-          </div>
-          <div style={fieldStyle}>
-            <label htmlFor="codes" style={labelStyle}>Diagnosis codes</label>
-            <input 
               id="codes"
-              type="text"
-              value={codes}
-              onChange={(e) => setCodes(e.target.value)}
-              style={inputStyle}
-            />
+              multiple
+              value={selectedCodes}
+              onChange={handleDiagnosisChange}
+              style={{
+                ...inputStyle,
+                height: '120px'
+              }}
+            >
+              {diagnoses.map(diagnosis => (
+                <option key={diagnosis.code} value={diagnosis.code}>
+                  {diagnosis.code} - {diagnosis.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div style={buttonContainerStyle}>
             <button type="button" onClick={handleCancel} style={cancelButtonStyle}>

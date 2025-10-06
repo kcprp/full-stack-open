@@ -74,6 +74,7 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
         visible={visible}
         setVisible={setVisible}
         setPatient={setPatient}
+        diagnoses={diagnoses}
       />
       {patient.entries && 
       <div>
